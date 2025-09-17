@@ -1,23 +1,34 @@
 from faststream import FastStream
 from faststream.kafka import KafkaBroker
-import redis.asyncio as aioredis
+from faststream.kafka.annotations import KafkaMessage
 from redis import ConnectionError
 
+from redis_connection import redis_client
 from config import settings
 from logger_config import logger
+#from consumers import *
+from schemas.email_message import EmailMessage
+from email_helper import send_message
 
 
 broker = KafkaBroker(f'{settings.kafka.host}:{settings.kafka.port}')
+@broker.subscriber('send-email-message',
+                   auto_commit=False,
+                   group_id='email')
+async def send_email_consumer(body: EmailMessage, message: KafkaMessage):
+    if key:=await redis_client.get(body.model_dump_json()) != b'1':
+        await send_message(body)
+        res = await redis_client.setex(body.model_dump_json(),
+                                    settings.kafka.duplicate_cache_time,
+                                    b'1')
+        logger.debug('Ключ получен: %s, Ключ был добавлен: %s', key, res)
+    await message.ack()
 app = FastStream(broker)
 
-redis_client = None
+
 
 @app.on_startup
 async def startup():
-    global redis_client
-    redis_client = aioredis.Redis(host=settings.redis.host,
-                                  port=settings.redis.port,
-                                  db=settings.redis.db)
     try:
         await redis_client.ping()
     except ConnectionError:

@@ -22,8 +22,10 @@ services:
   redis:
     image: redis:8.2.1-alpine
     container_name: redis
-    hostname: redis
-    network_mode: "host"
+    networks:
+      - kafka_net
+    ports:
+      - 6379:6379
 
 networks:
   kafka_net:

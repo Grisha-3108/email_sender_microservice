@@ -1,6 +1,5 @@
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import asyncio
 
 from aiosmtplib import SMTP
 from aiosmtplib.errors import (SMTPResponseException,
