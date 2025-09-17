@@ -5,7 +5,8 @@ from pydantic_settings import (BaseSettings,
 from pydantic import (BaseModel, 
                       Field, 
                       EmailStr, 
-                      model_validator)
+                      model_validator,
+                      PositiveInt)
 
 
 
@@ -27,11 +28,18 @@ class Email(BaseModel):
 class Kafka(BaseModel):
     host: str = 'localhost'
     port: int = Field(qe=0, le=65535, default=9092)
+    duplicate_cache_time: PositiveInt = 60
+
+class Redis(BaseModel):
+    host: str = 'localhost'
+    port: int = Field(qe=0, le=65535, default=6379)
+    db: int = Field(qe=0, default=0)
 
 
 class Settings(BaseSettings):
     email: Email = Email()
     kafka: Kafka = Kafka()
+    redis: Redis = Redis()
 
     model_config = SettingsConfigDict(
         env_file='.env',
