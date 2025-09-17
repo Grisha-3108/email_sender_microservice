@@ -23,10 +23,15 @@ class Email(BaseModel):
         if self.username is None:
             self.password = None
         return self
+    
+class Kafka(BaseModel):
+    host: str = 'localhost'
+    port: int = Field(qe=0, le=65535, default=9092)
 
 
 class Settings(BaseSettings):
     email: Email = Email()
+    kafka: Kafka = Kafka()
 
     model_config = SettingsConfigDict(
         env_file='.env',
@@ -35,6 +40,5 @@ class Settings(BaseSettings):
         case_sensitive=False,
         env_file_encoding='utf-8'
     )
-
 
 settings = Settings()
