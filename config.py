@@ -1,23 +1,26 @@
-from typing import Self
+from typing import Self, Annotated
+from annotated_types import Le
 
 from pydantic_settings import (BaseSettings, 
                                SettingsConfigDict)
-from pydantic import (BaseModel, 
-                      Field, 
+from pydantic import (BaseModel,
                       EmailStr, 
                       model_validator,
-                      PositiveInt)
-
+                      NonNegativeInt,
+                      PositiveInt,
+                      ConfigDict)
 
 
 class Email(BaseModel):
     host: str = 'localhost'
-    port: int = Field(qe = 0, le=65535, default=587)
+    port: Annotated[NonNegativeInt, Le(le=65535)] = 587
     sender: EmailStr = 'root@localhost'
     username: str | None = None
     password: str | None = None
     ssl: bool = False
     starttls: bool = False
+
+    model_config = ConfigDict(json_schema_extra={'le': [{'port': 65535}]})
 
     @model_validator(mode='after')
     def none_password_for_none_user(self) -> Self:
@@ -27,13 +30,13 @@ class Email(BaseModel):
     
 class Kafka(BaseModel):
     host: str = 'localhost'
-    port: int = Field(qe=0, le=65535, default=9092)
+    port: Annotated[NonNegativeInt, Le(le=65535)] = 9092
     duplicate_cache_time: PositiveInt = 60
 
 class Redis(BaseModel):
     host: str = 'localhost'
-    port: int = Field(qe=0, le=65535, default=6379)
-    db: int = Field(qe=0, default=0)
+    port: Annotated[NonNegativeInt, Le(le=65535)] = 6379
+    db: NonNegativeInt = 0
 
 
 class Settings(BaseSettings):
@@ -50,3 +53,4 @@ class Settings(BaseSettings):
     )
 
 settings = Settings()
+print(settings.email.port)
