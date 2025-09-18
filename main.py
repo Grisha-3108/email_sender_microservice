@@ -13,15 +13,10 @@ from email_helper import send_message
 broker = KafkaBroker(f'{settings.kafka.host}:{settings.kafka.port}')
 @broker.subscriber('send-email-message',
                    auto_commit=False,
-                   auto_offset_reset='latest',
                    group_id='email')
 async def send_email_consumer(body: EmailMessage, message: KafkaMessage):
     if key:=await redis_client.get(message.message_id) != b'1':
         await send_message(body)
-        # try:
-        #     await send_message(body)
-        # except Exception:
-        #     logger.debug('Ошибка пре отправке письма через send_message в send_email_consumer')
         res = await redis_client.setex(message.message_id,
                                     settings.kafka.duplicate_cache_time,
                                     b'1')

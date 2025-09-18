@@ -1,5 +1,6 @@
 from typing import Self, Annotated
 from annotated_types import Le
+from pathlib import Path
 
 from pydantic_settings import (BaseSettings, 
                                SettingsConfigDict)
@@ -7,8 +8,9 @@ from pydantic import (BaseModel,
                       EmailStr, 
                       model_validator,
                       NonNegativeInt,
-                      PositiveInt,
-                      ConfigDict)
+                      PositiveInt)
+
+BASE_DIR = Path(__file__).resolve().parent
 
 
 class Email(BaseModel):
@@ -43,7 +45,7 @@ class Settings(BaseSettings):
     redis: Redis = Redis()
 
     model_config = SettingsConfigDict(
-        env_file='.env',
+        env_file=BASE_DIR / '.env',
         env_nested_delimiter='__',
         env_prefix='EMAIL_SENDER__',
         case_sensitive=False,
