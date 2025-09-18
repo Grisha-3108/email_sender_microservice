@@ -1,9 +1,10 @@
-import asyncio
 import pytest
 from pytest import param
-from aiosmtplib.errors import SMTPConnectError
+from faststream.kafka import TestKafkaBroker
+
 from schemas.email_message import EmailMessage
 from main import send_email_consumer
+from logger_config import logger
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('recipients, plain, html, subject',
@@ -21,12 +22,13 @@ from main import send_email_consumer
                                id='Only both types of message with  subject and single user')
                          ]
                          )
-async def test_send_message(kafka_broker, mocker, recipients, plain, html, subject):
-    message = EmailMessage(recipients=recipients,
-                           plain=plain,
-                           html=html,
-                           subject=subject)
-    mocked_send_message = mocker.patch('main.send_message')
-    await kafka_broker.publish(message, topic='send-email-message', key=b'key')
-    await send_email_consumer.wait_call(timeout=3)
-    mocked_send_message.assert_awaited_once()
+async def test_send_message(test_app, mocker, recipients, plain, html, subject):
+    async with TestKafkaBroker(test_app.broker) as kafka_broker:
+      message = EmailMessage(recipients=recipients,
+                              plain=plain,
+                              html=html,
+                              subject=subject)
+      mocked_send_message = mocker.patch('main.send_message')
+      await kafka_broker.publish(message, topic='send-email-message')
+      await send_email_consumer.wait_call(timeout=10)
+      mocked_send_message.assert_awaited_once_with(message)

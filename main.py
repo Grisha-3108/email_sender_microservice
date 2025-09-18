@@ -6,7 +6,6 @@ from redis import ConnectionError
 from redis_connection import redis_client
 from config import settings
 from logger_config import logger
-#from consumers import *
 from schemas.email_message import EmailMessage
 from email_helper import send_message
 
@@ -14,11 +13,16 @@ from email_helper import send_message
 broker = KafkaBroker(f'{settings.kafka.host}:{settings.kafka.port}')
 @broker.subscriber('send-email-message',
                    auto_commit=False,
+                   auto_offset_reset='latest',
                    group_id='email')
 async def send_email_consumer(body: EmailMessage, message: KafkaMessage):
-    if key:=await redis_client.get(body.model_dump_json()) != b'1':
+    if key:=await redis_client.get(message.message_id) != b'1':
         await send_message(body)
-        res = await redis_client.setex(body.model_dump_json(),
+        # try:
+        #     await send_message(body)
+        # except Exception:
+        #     logger.debug('Ошибка пре отправке письма через send_message в send_email_consumer')
+        res = await redis_client.setex(message.message_id,
                                     settings.kafka.duplicate_cache_time,
                                     b'1')
         logger.debug('Ключ получен: %s, Ключ был добавлен: %s', key, res)
@@ -37,4 +41,4 @@ async def startup():
 
 @app.on_shutdown
 async def shutdown():
-    await redis_client.close()
+    await redis_client.aclose()

@@ -20,8 +20,6 @@ class Email(BaseModel):
     ssl: bool = False
     starttls: bool = False
 
-    model_config = ConfigDict(json_schema_extra={'le': [{'port': 65535}]})
-
     @model_validator(mode='after')
     def none_password_for_none_user(self) -> Self:
         if self.username is None:
@@ -53,4 +51,3 @@ class Settings(BaseSettings):
     )
 
 settings = Settings()
-print(settings.email.port)
