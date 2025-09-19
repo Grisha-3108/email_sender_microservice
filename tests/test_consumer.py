@@ -1,3 +1,5 @@
+from hashlib import sha256
+
 import pytest
 from pytest import param
 from faststream.kafka import TestKafkaBroker
@@ -5,8 +7,8 @@ from faststream import TestApp
 
 from schemas.email_message import EmailMessage
 from main import send_email_consumer
-from logger_config import logger
 from main import app
+from redis_connection import redis_client
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('recipients, plain, html, subject',
@@ -26,6 +28,7 @@ from main import app
                          )
 async def test_send_message(clear_redis, mocker, recipients, plain, html, subject):
     async with TestKafkaBroker(app.broker, with_real=True) as kafka_broker, TestApp(app):
+      count_hashes_in_cache = len(await redis_client.keys())
       message = EmailMessage(recipients=recipients,
                               plain=plain,
                               html=html,
@@ -34,3 +37,4 @@ async def test_send_message(clear_redis, mocker, recipients, plain, html, subjec
       await kafka_broker.publish(message, topic='send-email-message')
       await send_email_consumer.wait_call(timeout=3)
       mocked_send_message.assert_awaited_once_with(message)
+      assert (len(await redis_client.keys()) - count_hashes_in_cache) == 1

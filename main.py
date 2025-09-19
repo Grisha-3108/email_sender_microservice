@@ -1,4 +1,6 @@
-from faststream import FastStream
+from hashlib import sha256
+
+from faststream import FastStream, Logger
 from faststream.kafka import KafkaBroker
 from faststream.kafka.annotations import KafkaMessage
 from redis import ConnectionError
@@ -14,14 +16,17 @@ broker = KafkaBroker(f'{settings.kafka.host}:{settings.kafka.port}')
 @broker.subscriber('send-email-message',
                    auto_commit=False,
                    group_id='email')
-async def send_email_consumer(body: EmailMessage, message: KafkaMessage):
-    if key:=await redis_client.get(message.message_id) != b'1':
+async def send_email_consumer(body: EmailMessage, message: KafkaMessage, logger: Logger):
+    logger.warning('Тело сообщения в байтах: %s', message.body)
+    logger.warning('Тело сообщения в виде строки: %s', message.body.decode())
+    message_hash = sha256(message.body).digest()
+    if key:=await redis_client.get(message_hash) != b'1':
         await send_message(body)
-        res = await redis_client.setex(message.message_id,
+        res = await redis_client.setex(message_hash,
                                     settings.kafka.duplicate_cache_time,
                                     b'1')
         logger.debug('Ключ получен: %s, Ключ был добавлен: %s', key, res)
-    await message.ack()
+
 app = FastStream(broker)
 
 

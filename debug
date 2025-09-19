@@ -1,0 +1,2 @@
+b'{"recipients":["user@mail.ru"],"subject":"\xd0\xa2\xd0\xb5\xd0\xbc\xd0\xb0","plain":"\xd0\xa1\xd0\xbe\xd0\xbe\xd0\xb1\xd1\x89\xd0\xb5\xd0\xbd\xd0\xb8\xd0\xb5","html":"<html><body>\xd0\xa1\xd0\xbe\xd0\xbe\xd0\xb1\xd1\x89\xd0\xb5\xd0\xbd\xd0\xb8\xd0\xb5</body></html>"}'
+b'{"recipients": ["user@mail.ru"], "subject": "\\u0422\\u0435\\u043c\\u0430", "plain": "\\u0421\\u043e\\u043e\\u0431\\u0449\\u0435\\u043d\\u0438\\u0435", "html": "<html><body>\\u0421\\u043e\\u043e\\u0431\\u0449\\u0435\\u043d\\u0438\\u0435</body></html>"}'
