@@ -1,0 +1,121 @@
+{
+  "asyncapi": "2.6.0",
+  "defaultContentType": "application/json",
+  "info": {
+    "title": "Pet \u043f\u0440\u043e\u0435\u043a\u0442 \u043f\u043e \u043e\u0442\u043f\u0440\u0430\u0432\u043a\u0435 email",
+    "version": "1.0.0",
+    "description": "\u041f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435, \u043a\u043e\u0442\u043e\u0440\u043e\u0435 \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u044f\u0435\u0442 email, \u043f\u043e\u043b\u0443\u0447\u0435\u043d\u043d\u044b\u0435 \u043e\u0442 \u0431\u0440\u043e\u043a\u0435\u0440\u0430"
+  },
+  "servers": {
+    "development": {
+      "url": "localhost:9092",
+      "protocol": "kafka",
+      "protocolVersion": "auto"
+    }
+  },
+  "channels": {
+    "input_data:Consume_email_message": {
+      "description": "\u0421\u044e\u0434\u0430 \u043f\u043e\u0434\u0430\u044e\u0442\u0441\u044f \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u044f \u0434\u043b\u044f \u043e\u0442\u043f\u0440\u0430\u0432\u043a\u0438 \u0447\u0435\u0440\u0435\u0437 email",
+      "servers": [
+        "development"
+      ],
+      "bindings": {
+        "kafka": {
+          "topic": "send-email-message",
+          "bindingVersion": "0.4.0"
+        }
+      },
+      "subscribe": {
+        "message": {
+          "$ref": "#/components/messages/input_data:Consume_email_message:Message"
+        }
+      }
+    }
+  },
+  "components": {
+    "messages": {
+      "input_data:Consume_email_message:Message": {
+        "title": "input_data:Consume_email_message:Message",
+        "correlationId": {
+          "location": "$message.header#/correlation_id"
+        },
+        "payload": {
+          "$ref": "#/components/schemas/EmailMessage"
+        }
+      }
+    },
+    "schemas": {
+      "EmailMessage": {
+        "additionalProperties": false,
+        "description": "\u041c\u043e\u0434\u0435\u043b\u044c \u0434\u043b\u044f email-\u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u044f \u043a\u0430\u043a \u0432 \u0442\u0435\u043a\u0441\u0442\u043e\u0432\u043e\u043c, \u0442\u0430\u043a \u0438 \u0432 html-\u0432\u0438\u0434\u0435",
+        "properties": {
+          "recipients": {
+            "description": "email-\u0430\u0434\u0440\u0435\u0441\u0430 \u043f\u043e\u043b\u0443\u0447\u0430\u0442\u0435\u043b\u0435\u0439 \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0439",
+            "examples": [
+              "user@mail.ru"
+            ],
+            "items": {
+              "format": "email",
+              "type": "string"
+            },
+            "title": "Recipients",
+            "type": "array"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "\u0422\u0435\u043c\u0430 \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u044f\u0435\u043c\u043e\u0433\u043e \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u044f",
+            "examples": [
+              "\u0422\u0435\u043c\u0430 \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u044f"
+            ],
+            "title": "Subject"
+          },
+          "plain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "\u0422\u0435\u043b\u043e email-\u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u044f \u0432 \u0432\u0438\u0434\u0435 \u0442\u0435\u043a\u0441\u0442\u0430",
+            "examples": [
+              "\u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435"
+            ],
+            "title": "Plain"
+          },
+          "html": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "\u0422\u0435\u043b\u043e email-\u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u044f \u0432 \u0432\u0438\u0434\u0435 html",
+            "examples": [
+              "<html><body><p>\u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435</p></body></html>"
+            ],
+            "title": "Html"
+          }
+        },
+        "required": [
+          "recipients"
+        ],
+        "title": "EmailMessage",
+        "type": "object"
+      }
+    }
+  }
+}

@@ -15,10 +15,10 @@ from email_helper import send_message
 broker = KafkaBroker(f'{settings.kafka.host}:{settings.kafka.port}')
 @broker.subscriber('send-email-message',
                    auto_commit=False,
-                   group_id='email')
+                   group_id='email',
+                   description='Сюда подаются сообщения для отправки через email',
+                   title='input_data:Consume_email_message')
 async def send_email_consumer(body: EmailMessage, message: KafkaMessage, logger: Logger):
-    logger.warning('Тело сообщения в байтах: %s', message.body)
-    logger.warning('Тело сообщения в виде строки: %s', message.body.decode())
     message_hash = sha256(message.body).digest()
     if key:=await redis_client.get(message_hash) != b'1':
         await send_message(body)
@@ -27,7 +27,11 @@ async def send_email_consumer(body: EmailMessage, message: KafkaMessage, logger:
                                     b'1')
         logger.debug('Ключ получен: %s, Ключ был добавлен: %s', key, res)
 
-app = FastStream(broker)
+app = FastStream(broker,
+                 title='Pet проект по отправке email',
+                 version='1.0.0',
+                 description='Приложение, которое отправляет email, полученные от брокера',
+                 )
 
 
 
