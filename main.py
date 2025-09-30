@@ -1,4 +1,5 @@
 from hashlib import sha256
+import importlib
 
 from faststream import FastStream, Logger
 from faststream.kafka import KafkaBroker
@@ -17,14 +18,6 @@ broker = KafkaBroker(f'{settings.kafka.host}:{settings.kafka.port}',
                      enable_idempotence=True,
                      middlewares=[IndempotenceConsumer])
 
-@broker.subscriber('send-email-message',
-                   auto_commit=False,
-                   group_id='email',
-                   description='Сюда подаются сообщения для отправки через email',
-                   title='input_data:Consume_email_message')
-async def send_email_consumer(body: EmailMessage, message: KafkaMessage, logger: Logger):
-    await send_message(body)
-
 
 app = FastStream(broker,
                  title='Pet проект по отправке email',
@@ -37,6 +30,7 @@ app = FastStream(broker,
 
 @app.on_startup
 async def startup():
+    importlib.import_module('consumers')
     try:
         await redis_client.ping()
     except ConnectionError:

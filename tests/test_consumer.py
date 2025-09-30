@@ -4,7 +4,7 @@ from faststream.kafka import TestKafkaBroker
 from faststream import TestApp
 
 from schemas.email_message import EmailMessage
-from main import send_email_consumer
+from consumers import send_email_consumer
 from main import app
 from redis_connection import redis_client
 
@@ -31,7 +31,7 @@ async def test_send_message(clear_redis, mocker, recipients, plain, html, subjec
                               plain=plain,
                               html=html,
                               subject=subject)
-      mocked_send_message = mocker.patch('main.send_message')
+      mocked_send_message = mocker.patch('consumers.email_consumer.send_message')
       await kafka_broker.publish(message, topic='send-email-message')
       await send_email_consumer.wait_call(timeout=3)
       mocked_send_message.assert_awaited_once_with(message)
